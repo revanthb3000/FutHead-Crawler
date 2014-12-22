@@ -1,12 +1,11 @@
 import BeautifulSoup
-import mechanize
+import webHandler
+import utilityFunctions
 
 def main():
-    browser = mechanize.Browser()
-    browser.set_handle_robots(False)
-    browser.addheaders = [('User-agent', 'Firefox')]
-    browser.open("http://www.futhead.com/15/players/5/")
-    print browser.response().read()
+    browser = webHandler.getBrowserHandler()
+    playerInfo = webHandler.getPlayerPageContents(browser, 15, 1)
+    utilityFunctions.writeSourceToFile(playerInfo["playerName"], playerInfo["futHeadPage"])
 
 if __name__ == '__main__':
     main()
