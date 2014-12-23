@@ -1,10 +1,30 @@
 import webHandler
 import utilityFunctions
 import statExtractor
+from multiprocessing import Process
 
 def main():
+    start = 1
+    end = 100000
+    cnt = start
+    #Number of players crawled per thread.
+    numOfPlayers = 20000
+    processes = []
+    while(cnt < end):
+        p = Process(target=crawlPlayerPages,args=(cnt, cnt + numOfPlayers))
+        p.start()
+        processes.append(p)
+        cnt += numOfPlayers
+
+    for process in processes:
+        process.join()
+
+"""
+Runs the getPlayerInfo function in a loop.
+"""            
+def crawlPlayerPages(startId, endId):
     browser = webHandler.getBrowserHandler()
-    for playerId in range(1,100000):
+    for playerId in range(startId,endId):
         try:
             getPlayerInfo(browser, 15, playerId)
         except:
