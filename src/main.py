@@ -4,22 +4,30 @@ import statExtractor
 
 def main():
     browser = webHandler.getBrowserHandler()
-    getPlayerInfo(browser, 14, 2)
+    getPlayerInfo(browser, 15, 5)
 
+"""
+This is the main function that stitches all pieces together and writes data to a file.
+"""
 def getPlayerInfo(browser, fifaVersion, playerId):
     playerInfo = webHandler.getPlayerPageContents(browser, fifaVersion, playerId)
     soup = statExtractor.getSoupHandler(playerInfo["futHeadPage"])
     
-    print "Player Rating : "
-    statExtractor.getPlayerRating(soup)
+    playerName = playerInfo["playerName"]
+    playerDetails = statExtractor.getPlayerDetails(soup)
+    playerRating = statExtractor.getPlayerRating(soup)
+    playerBaseStats = statExtractor.getBaseStats(soup)
+    playerIndividualStats = statExtractor.getIndividualStats(soup)
     
-    print "Base Stats : "
-    statExtractor.getBaseStats(soup)
+    print "Player Name : " + playerName
+    playerFileContents = ""
+    playerFileContents += "Player Details : \n" + playerDetails + "\n"
+    playerFileContents += "Player Rating : " + str(playerRating) + "\n"
+    playerFileContents += "Base Stats : \n" + playerBaseStats + "\n"
+    playerFileContents += "Individual Stats : \n" + playerIndividualStats + "\n"
     
-    print "Individual Stats : "
-    statExtractor.getIndividualStats(soup)
-    
-    utilityFunctions.writeSourceToFile(playerInfo["playerName"], playerInfo["futHeadPage"])
+    fileName = "../data/" + str(fifaVersion) + "/" + str(playerId) + " - " + playerName + ".dat"
+    utilityFunctions.writeSourceToFile(fileName, playerFileContents.encode('utf-8'))
     
 
 if __name__ == '__main__':
