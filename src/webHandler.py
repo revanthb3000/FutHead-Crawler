@@ -20,6 +20,7 @@ This function returns the player's name and the stats page.
 """
 def getPlayerPageContents(browser, fifaVersion, playerId):
     url = baseUrl.replace("<FIFAVERSION>", str(fifaVersion)).replace("<PLAYERID>", str(playerId))
+    #TODO: For FIFA 13, the URL is slightly different. Have to look at that.
     browser.open(url)
     pageSource = browser.response().read()
     title = browser.title()
