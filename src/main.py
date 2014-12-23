@@ -4,8 +4,11 @@ import statExtractor
 
 def main():
     browser = webHandler.getBrowserHandler()
-    for playerId in range(1,15400):
-        getPlayerInfo(browser, 15, playerId)
+    for playerId in range(1,100000):
+        try:
+            getPlayerInfo(browser, 15, playerId)
+        except:
+            print ""
 
 """
 This is the main function that stitches all pieces together and writes data to a file.
@@ -20,7 +23,7 @@ def getPlayerInfo(browser, fifaVersion, playerId):
     playerBaseStats = statExtractor.getBaseStats(soup)
     playerIndividualStats = statExtractor.getIndividualStats(soup)
     
-    print "Player Name : " + playerName
+    print "Player Name : " + str(playerId) + " - " + playerName
     playerFileContents = ""
     playerFileContents += "Player Details : \n" + playerDetails + "\n"
     playerFileContents += "Player Rating : " + str(playerRating) + "\n"
