@@ -26,7 +26,7 @@ def crawlPlayerPages(startId, endId):
     browser = webHandler.getBrowserHandler()
     for playerId in range(startId,endId):
         try:
-            getPlayerInfo(browser, 15, playerId)
+            getPlayerInfo(browser, 14, playerId)
         except:
             print ""
 
