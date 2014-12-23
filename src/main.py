@@ -5,10 +5,10 @@ from multiprocessing import Process
 
 def main():
     start = 1
-    end = 100000
+    end = 50000
     cnt = start
     #Number of players crawled per thread.
-    numOfPlayers = 20000
+    numOfPlayers = 5000
     processes = []
     while(cnt < end):
         p = Process(target=crawlPlayerPages,args=(cnt, cnt + numOfPlayers))
@@ -26,7 +26,7 @@ def crawlPlayerPages(startId, endId):
     browser = webHandler.getBrowserHandler()
     for playerId in range(startId,endId):
         try:
-            getPlayerInfo(browser, 14, playerId)
+            getPlayerInfo(browser, 12, playerId)
         except:
             print ""
 
