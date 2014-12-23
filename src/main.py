@@ -4,7 +4,8 @@ import statExtractor
 
 def main():
     browser = webHandler.getBrowserHandler()
-    getPlayerInfo(browser, 15, 5)
+    for playerId in range(1,15400):
+        getPlayerInfo(browser, 15, playerId)
 
 """
 This is the main function that stitches all pieces together and writes data to a file.
