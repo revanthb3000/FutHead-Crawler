@@ -6,3 +6,6 @@ crawl:
 
 postprocess:
 	python src/PostProcessing/postProcessDataFiles.py
+
+createDB:
+	python src/PostProcessing/createDatabase.py
