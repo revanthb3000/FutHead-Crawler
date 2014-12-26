@@ -1,8 +1,6 @@
 """
 All frequently used functions/utilities will be written over here.
 """
-import webHandler
-import statExtractor
 
 """
 Simple function.Give me a filename and contents and this function will do the writing.

@@ -4,6 +4,15 @@ import statExtractor
 from multiprocessing import Process
 
 def main():
+    getFIFAData(12)
+    getFIFAData(13)
+    getFIFAData(14)
+    getFIFAData(15)
+        
+"""
+Extracts all data for a given FIFA version.
+"""
+def getFIFAData(fifaVersion):
     start = 1
     end = 50000
     cnt = start
@@ -11,7 +20,7 @@ def main():
     numOfPlayers = 5000
     processes = []
     while(cnt < end):
-        p = Process(target=crawlPlayerPages,args=(cnt, cnt + numOfPlayers))
+        p = Process(target=crawlPlayerPages,args=(cnt, cnt + numOfPlayers, fifaVersion))
         p.start()
         processes.append(p)
         cnt += numOfPlayers
@@ -22,11 +31,11 @@ def main():
 """
 Runs the getPlayerInfo function in a loop.
 """            
-def crawlPlayerPages(startId, endId):
+def crawlPlayerPages(startId, endId, fifaVersion):
     browser = webHandler.getBrowserHandler()
     for playerId in range(startId,endId):
         try:
-            getPlayerInfo(browser, 13, playerId)
+            getPlayerInfo(browser, fifaVersion, playerId)
         except:
             print ""
 
