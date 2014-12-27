@@ -58,26 +58,66 @@ def createIndices(connection):
 """
 This function will process the data files and insert that data into the database.
 """
-def processFile(dataDirectory, fileName):
+def processFile(dataDirectory, fileName, fifaVersion):
     splitString = fileName.replace(".dat","").split("-")
     playerId = int(splitString[0].strip())
     playerName = splitString[1].strip()
     playerInfoFields = ["Full Name", "Club","League","Nation","Position",
                         "Height","Foot","Attack Workrate","Defensive Workrate",
-                        "Weak Foot", "Skill Moves", "Traits"]
-    playerInfo = {}
+                        "Weak Foot", "Skill Moves", "Traits", "Player Rating"]
     
-    print playerId
-    print playerName
+    #The HEA attribute was replaced with PHY from FIFA 15 onwards.
+    finalBaseAttribute = "HEA"
+    if(fifaVersion == 15):
+        finalBaseAttribute = "PHY"
+        
+    playerStatsFields = ["PAC","SHO","PAS","DRI",
+                         "DEF",finalBaseAttribute,"Ball Control", "Crossing", 
+                         "Curve", "Dribbling", "Finishing", "Free Kick Accuracy", 
+                         "Heading Accuracy", "Long Passing", "Long Shots", "Marking", 
+                         "Penalties", "Short Passing", "Shot Power", "Sliding Tackle", 
+                         "Standing Tackle", "Volleys", "Acceleration", "Agility", 
+                         "Balance", "Jumping", "Reactions", "Sprint Speed", 
+                         "Stamina", "Strength", "Aggression", "Positioning", 
+                         "Interceptions", "Vision"]
+
+    GKStatsFields = ["DIV", "HAN", "KIC",
+                     "REF", "SPE", "POS"]
+
+
+    playerInfo = {}
+    playerStats = {}
+    
+    
     fileHandle = open(dataDirectory + fileName,"r")
-    for line in fileHandle.readlines():
-        print line,
+    lines = fileHandle.readlines()
+    fileHandle.close()
+    
+    for line in lines:
+#         print line,
         for field in playerInfoFields:
             if(line.find(field)==0):
                 playerInfo[field] = line.replace(field,"").strip()
 
-    print playerInfo
-    fileHandle.close()
+    playerAttributes = playerStatsFields
+    isGoalKeeper = False
+    if(playerInfo["Position"]=="GK"):
+        isGoalKeeper = True
+        playerAttributes = GKStatsFields
+    
+    for line in lines:
+        line = line.strip()
+        split = line.find(" ")
+        value = line[0:split]
+        field = line[(split+1):]
+        if(field in playerAttributes):
+            playerStats[field] = int(value)
+
+    print "Is GoalKeeper ? " + str(isGoalKeeper)
+    print playerId
+    print playerName
+    print playerInfo    
+    print playerStats
 
 def createFIFADB(fifaVersion):    
 #     connection = createConnection(fifaVersion)
@@ -88,8 +128,9 @@ def createFIFADB(fifaVersion):
     dataDirectory += "/"
     for playerFile in os.listdir(dataDirectory):
         print playerFile
-        processFile(dataDirectory, playerFile)
+        processFile(dataDirectory, playerFile, fifaVersion)
         break
+    processFile(dataDirectory, "4 - Casillas.dat", fifaVersion)
 
 def main():
     createFIFADB(15)
