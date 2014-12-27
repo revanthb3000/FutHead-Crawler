@@ -15,6 +15,7 @@ def createConnection(fifaVersion):
         None
 
     connection = sqlite3.connect(str(fifaVersion) + ".db")
+    connection.text_factory = str
     return connection
 
 """
@@ -24,13 +25,17 @@ def createTables(connection, fifaVersion):
     #Creating the player info tables.
     connection.execute("CREATE TABLE PlayerInfo (pid int, name text, full_name text," \
                                                 "club text, league text, nation text, position text," \
-                                                "height text, Foot text, attack_WR text, defense_WR," \
+                                                "height text, Foot text, attack_WR text, defense_WR text," \
                                                 "skills int, weak_foot int, traits text);")
     
     #36 entries.
+    #The HEA attribute was replaced with PHY from FIFA 15 onwards.
+    finalBaseAttribute = "HEA"
+    if(fifaVersion == 15):
+        finalBaseAttribute = "PHY"
     connection.execute("CREATE TABLE PlayerStats (pid int, PAC int, SHO int, "\
                                                   "PAS int, DRI int, DEF int,"\
-                                                  "PHY int, Ball Control int, Crossing int,"\
+                                                  "" + finalBaseAttribute + " int, Ball_Control int, Crossing int,"\
                                                   "Curve int, Dribbling int, Finishing int,"\
                                                   "Free_Kick_Accuracy int, Heading_Accuracy int, Long_Passing int,"\
                                                   "Long_Shots int, Marking int, Penalties int,"\
@@ -41,7 +46,8 @@ def createTables(connection, fifaVersion):
                                                   "Strength int, Aggression int, Positioning int,"\
                                                   "Interceptions int, Vision int, Player_Rating int);")
     
-    connection.execute("CREATE TABLE GoalkeeperStats (pid int, DIV int, HAN int, "\
+    #Important point - GK_DIV is used since DIV is an sql keyword.
+    connection.execute("CREATE TABLE GoalkeeperStats (pid int, GK_DIV int, HAN int, "\
                                                      "KIC int, REF int, SPE int,"\
                                                      "POS int, Player_Rating int);")
 
@@ -54,11 +60,34 @@ def createIndices(connection):
     connection.execute("CREATE INDEX PlayerStatsIndex ON PlayerStats(pid);")
     
     connection.execute("CREATE INDEX GoalkeeperStatsIndex ON GoalkeeperStats(pid);")
+    
+"""
+Inserts player details into the PlayerInfo table.
+"""
+def insertPlayerInfo(cursor, playerId, playerName, playerInfo):
+    data = (playerId,playerName,playerInfo["Full Name"],playerInfo["Club"],playerInfo["League"],playerInfo["Nation"],playerInfo["Position"],
+         playerInfo["Height"],playerInfo["Foot"],playerInfo["Attack Workrate"],playerInfo["Defensive Workrate"],int(playerInfo["Skill Moves"]),
+         int(playerInfo["Weak Foot"]),playerInfo["Traits"])
+    cursor.execute("INSERT INTO `PlayerInfo`(`pid`, `name`, `full_name`, `club`, `league`, `nation`, `position`, "\
+                                    "`height`, `Foot`, `attack_WR`, `defense_WR`, `skills`, `weak_foot`, `traits`) "\
+                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);", data)
+
+"""
+This is used for outfield players. Stats are inserted into the PlayerStats table
+"""
+def insertPlayerStats(connection, playerId, playerStats):
+    return
+
+"""
+This is used for goalkeepers. Stats are inserted into the GoalkeeperStats table.
+"""
+def insertGKStats(connection, playerId, playerStats):
+    return
 
 """
 This function will process the data files and insert that data into the database.
 """
-def processFile(dataDirectory, fileName, fifaVersion):
+def processFile(cursor, dataDirectory, fileName, fifaVersion):
     splitString = fileName.replace(".dat","").split("-")
     playerId = int(splitString[0].strip())
     playerName = splitString[1].strip()
@@ -113,24 +142,35 @@ def processFile(dataDirectory, fileName, fifaVersion):
         if(field in playerAttributes):
             playerStats[field] = int(value)
 
+    playerStats["Player Rating"] = playerInfo["Player Rating"]
+    
     print "Is GoalKeeper ? " + str(isGoalKeeper)
     print playerId
     print playerName
     print playerInfo    
     print playerStats
+    insertPlayerInfo(cursor, playerId, playerName, playerInfo)
+    if(isGoalKeeper):
+        insertGKStats(cursor, playerId, playerStats)
+    else:
+        insertPlayerStats(cursor, playerId, playerStats)
 
-def createFIFADB(fifaVersion):    
-#     connection = createConnection(fifaVersion)
-#     createTables(connection, fifaVersion)
+def createFIFADB(fifaVersion):
+    connection = createConnection(fifaVersion)
+    createTables(connection, fifaVersion)
+    cursor = connection.cursor()
     dataDirectory = "data/" + str(fifaVersion)
     if(fifaVersion==12 or fifaVersion==13):
         dataDirectory += "-filtered"
     dataDirectory += "/"
     for playerFile in os.listdir(dataDirectory):
         print playerFile
-        processFile(dataDirectory, playerFile, fifaVersion)
+        processFile(cursor, dataDirectory, playerFile, fifaVersion)
         break
-    processFile(dataDirectory, "4 - Casillas.dat", fifaVersion)
+    processFile(cursor, dataDirectory, "4 - Casillas.dat", fifaVersion)
+    createIndices(connection)
+    connection.commit()
+    connection.close()
 
 def main():
     createFIFADB(15)
