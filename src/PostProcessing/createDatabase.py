@@ -23,9 +23,9 @@ Creates all the required tables.
 def createTables(connection, fifaVersion):
     #Creating the player info tables.
     connection.execute("CREATE TABLE PlayerInfo (pid int, name text, full_name text," \
-                                                "club text, league text, position text," \
-                                                "height text, attack_WR text, defense_WR," \
-                                                "skills int, weakFoot int, traits text);")
+                                                "club text, league text, nation text, position text," \
+                                                "height text, Foot text, attack_WR text, defense_WR," \
+                                                "skills int, weak_foot int, traits text);")
     
     #36 entries.
     connection.execute("CREATE TABLE PlayerStats (pid int, PAC int, SHO int, "\
@@ -55,8 +55,29 @@ def createIndices(connection):
     
     connection.execute("CREATE INDEX GoalkeeperStatsIndex ON GoalkeeperStats(pid);")
 
-def processFile(fileName):
-    return
+"""
+This function will process the data files and insert that data into the database.
+"""
+def processFile(dataDirectory, fileName):
+    splitString = fileName.replace(".dat","").split("-")
+    playerId = int(splitString[0].strip())
+    playerName = splitString[1].strip()
+    playerInfoFields = ["Full Name", "Club","League","Nation","Position",
+                        "Height","Foot","Attack Workrate","Defensive Workrate",
+                        "Weak Foot", "Skill Moves", "Traits"]
+    playerInfo = {}
+    
+    print playerId
+    print playerName
+    fileHandle = open(dataDirectory + fileName,"r")
+    for line in fileHandle.readlines():
+        print line,
+        for field in playerInfoFields:
+            if(line.find(field)==0):
+                playerInfo[field] = line.replace(field,"").strip()
+
+    print playerInfo
+    fileHandle.close()
 
 def createFIFADB(fifaVersion):    
 #     connection = createConnection(fifaVersion)
@@ -64,9 +85,10 @@ def createFIFADB(fifaVersion):
     dataDirectory = "data/" + str(fifaVersion)
     if(fifaVersion==12 or fifaVersion==13):
         dataDirectory += "-filtered"
+    dataDirectory += "/"
     for playerFile in os.listdir(dataDirectory):
         print playerFile
-        processFile(dataDirectory + "/" + playerFile)
+        processFile(dataDirectory, playerFile)
         break
 
 def main():
