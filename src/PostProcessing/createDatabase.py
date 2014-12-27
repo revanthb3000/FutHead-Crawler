@@ -75,8 +75,34 @@ def insertPlayerInfo(cursor, playerId, playerName, playerInfo):
 """
 This is used for outfield players. Stats are inserted into the PlayerStats table
 """
-def insertPlayerStats(connection, playerId, playerStats):
-    return
+def insertPlayerStats(cursor, playerId, playerStats, fifaVersion):
+    finalBaseAttribute = "HEA"
+    if(fifaVersion == 15):
+        finalBaseAttribute = "PHY"
+    
+    playerStatsFields = ["PAC","SHO","PAS","DRI",
+                         "DEF",finalBaseAttribute,"Ball Control", "Crossing", 
+                         "Curve", "Dribbling", "Finishing", "Free Kick Accuracy", 
+                         "Heading Accuracy", "Long Passing", "Long Shots", "Marking", 
+                         "Penalties", "Short Passing", "Shot Power", "Sliding Tackle", 
+                         "Standing Tackle", "Volleys", "Acceleration", "Agility", 
+                         "Balance", "Jumping", "Reactions", "Sprint Speed", 
+                         "Stamina", "Strength", "Aggression", "Positioning", 
+                         "Interceptions", "Vision", "Player Rating"]
+    data = (playerId,)
+    for field in playerStatsFields:
+        data += (playerStats[field],)
+    print data
+    cursor.execute("INSERT INTO `PlayerStats`(`pid`, `PAC`, `SHO`, `PAS`, `DRI`, `DEF`, `"+finalBaseAttribute+"`, "\
+                                            "`Ball_Control`, `Crossing`, `Curve`, `Dribbling`, `Finishing`, `Free_Kick_Accuracy`, "\
+                                            "`Heading_Accuracy`, `Long_Passing`, `Long_Shots`, `Marking`, `Penalties`, `Short_Passing`, "\
+                                            "`Shot_Power`, `Sliding_Tackle`, `Standing_Tackle`, `Volleys`, `Acceleration`, `Agility`, `Balance`, "\
+                                            "`Jumping`, `Reactions`, `Sprint_Speed`, `Stamina`, `Strength`, `Aggression`, `Positioning`, `Interceptions`, "\
+                                            "`Vision`, `Player_Rating`) "\
+                                            "VALUES (?,?,?,?,?,?,?,?,?,"\
+                                            "?,?,?,?,?,?,?,?,?,"\
+                                            "?,?,?,?,?,?,?,?,?,"\
+                                            "?,?,?,?,?,?,?,?,?)", data)
 
 """
 This is used for goalkeepers. Stats are inserted into the GoalkeeperStats table.
@@ -142,18 +168,20 @@ def processFile(cursor, dataDirectory, fileName, fifaVersion):
         if(field in playerAttributes):
             playerStats[field] = int(value)
 
-    playerStats["Player Rating"] = playerInfo["Player Rating"]
+    #Putting the overall rating in the player Stats dictionary. Why am I using the replace operator ? Because the delimiter for player rating is actually : and not <space>
+    playerStats["Player Rating"] = int(playerInfo["Player Rating"].replace(":","").strip())
     
-    print "Is GoalKeeper ? " + str(isGoalKeeper)
-    print playerId
-    print playerName
-    print playerInfo    
-    print playerStats
+#     print "Is GoalKeeper ? " + str(isGoalKeeper)
+#     print playerId
+#     print playerName
+#     print playerInfo    
+#     print playerStats
+    
     insertPlayerInfo(cursor, playerId, playerName, playerInfo)
     if(isGoalKeeper):
         insertGKStats(cursor, playerId, playerStats)
     else:
-        insertPlayerStats(cursor, playerId, playerStats)
+        insertPlayerStats(cursor, playerId, playerStats, fifaVersion)
 
 def createFIFADB(fifaVersion):
     connection = createConnection(fifaVersion)
