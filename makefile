@@ -1,5 +1,5 @@
 all:
-	@echo 'Use one of the targets - crawl/postprocess'
+	@echo 'Use one of the targets - crawl/postprocess/createDB'
 
 crawl:
 	cd src/Crawler; python main.py
