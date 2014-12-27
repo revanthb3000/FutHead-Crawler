@@ -55,9 +55,19 @@ def createIndices(connection):
     
     connection.execute("CREATE INDEX GoalkeeperStatsIndex ON GoalkeeperStats(pid);")
 
+def processFile(fileName):
+    return
+
 def createFIFADB(fifaVersion):    
-    connection = createConnection(fifaVersion)
-    createTables(connection, fifaVersion)
+#     connection = createConnection(fifaVersion)
+#     createTables(connection, fifaVersion)
+    dataDirectory = "data/" + str(fifaVersion)
+    if(fifaVersion==12 or fifaVersion==13):
+        dataDirectory += "-filtered"
+    for playerFile in os.listdir(dataDirectory):
+        print playerFile
+        processFile(dataDirectory + "/" + playerFile)
+        break
 
 def main():
     createFIFADB(15)
