@@ -26,7 +26,7 @@ def createTables(connection, fifaVersion):
     connection.execute("CREATE TABLE PlayerInfo (pid int, name text, full_name text," \
                                                 "club text, league text, nation text, position text," \
                                                 "height text, Foot text, attack_WR text, defense_WR text," \
-                                                "skills int, weak_foot int, traits text);")
+                                                "skills int, weak_foot int);")
     
     #36 entries.
     #The HEA attribute was replaced with PHY from FIFA 15 onwards.
@@ -65,12 +65,18 @@ def createIndices(connection):
 Inserts player details into the PlayerInfo table.
 """
 def insertPlayerInfo(cursor, playerId, playerName, playerInfo):
+    #FIFA 12 data isn't clean.
+    if(playerInfo["Skill Moves"] == ''):
+        playerInfo["Skill Moves"] = '0'
+    if(playerInfo["Weak Foot"] == ''):
+        playerInfo["Weak Foot"] = '0'
+        
     data = (playerId,playerName,playerInfo["Full Name"],playerInfo["Club"],playerInfo["League"],playerInfo["Nation"],playerInfo["Position"],
          playerInfo["Height"],playerInfo["Foot"],playerInfo["Attack Workrate"],playerInfo["Defensive Workrate"],int(playerInfo["Skill Moves"]),
-         int(playerInfo["Weak Foot"]),playerInfo["Traits"])
+         int(playerInfo["Weak Foot"]))
     cursor.execute("INSERT INTO `PlayerInfo`(`pid`, `name`, `full_name`, `club`, `league`, `nation`, `position`, "\
-                                    "`height`, `Foot`, `attack_WR`, `defense_WR`, `skills`, `weak_foot`, `traits`) "\
-                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);", data)
+                                    "`height`, `Foot`, `attack_WR`, `defense_WR`, `skills`, `weak_foot`) "\
+                                    "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?);", data)
 
 """
 This is used for outfield players. Stats are inserted into the PlayerStats table
@@ -92,7 +98,6 @@ def insertPlayerStats(cursor, playerId, playerStats, fifaVersion):
     data = (playerId,)
     for field in playerStatsFields:
         data += (playerStats[field],)
-    print data
     cursor.execute("INSERT INTO `PlayerStats`(`pid`, `PAC`, `SHO`, `PAS`, `DRI`, `DEF`, `"+finalBaseAttribute+"`, "\
                                             "`Ball_Control`, `Crossing`, `Curve`, `Dribbling`, `Finishing`, `Free_Kick_Accuracy`, "\
                                             "`Heading_Accuracy`, `Long_Passing`, `Long_Shots`, `Marking`, `Penalties`, `Short_Passing`, "\
@@ -107,8 +112,14 @@ def insertPlayerStats(cursor, playerId, playerStats, fifaVersion):
 """
 This is used for goalkeepers. Stats are inserted into the GoalkeeperStats table.
 """
-def insertGKStats(connection, playerId, playerStats):
-    return
+def insertGKStats(cursor, playerId, playerStats):
+    GKStatsFields = ["DIV", "HAN", "KIC",
+                     "REF", "SPE", "POS", "Player Rating"]    
+    data = (playerId,)
+    for field in GKStatsFields:
+        data += (playerStats[field],)
+    cursor.execute("INSERT INTO `GoalkeeperStats`(`pid`, `GK_DIV`, `HAN`, `KIC`, `REF`, `SPE`, `POS`, `Player_Rating`) "\
+                   "VALUES (?, ?, ?, ?,?, ?, ?, ?)", data)
 
 """
 This function will process the data files and insert that data into the database.
@@ -119,7 +130,7 @@ def processFile(cursor, dataDirectory, fileName, fifaVersion):
     playerName = splitString[1].strip()
     playerInfoFields = ["Full Name", "Club","League","Nation","Position",
                         "Height","Foot","Attack Workrate","Defensive Workrate",
-                        "Weak Foot", "Skill Moves", "Traits", "Player Rating"]
+                        "Weak Foot", "Skill Moves", "Player Rating"]
     
     #The HEA attribute was replaced with PHY from FIFA 15 onwards.
     finalBaseAttribute = "HEA"
@@ -139,10 +150,14 @@ def processFile(cursor, dataDirectory, fileName, fifaVersion):
     GKStatsFields = ["DIV", "HAN", "KIC",
                      "REF", "SPE", "POS"]
 
-
     playerInfo = {}
     playerStats = {}
+
+    for field in playerInfoFields:
+        playerInfo[field] = None
     
+    for field in playerStatsFields:
+        playerStats[field] = 0
     
     fileHandle = open(dataDirectory + fileName,"r")
     lines = fileHandle.readlines()
@@ -166,6 +181,8 @@ def processFile(cursor, dataDirectory, fileName, fifaVersion):
         value = line[0:split]
         field = line[(split+1):]
         if(field in playerAttributes):
+            if(value == "None"):
+                value = 0
             playerStats[field] = int(value)
 
     #Putting the overall rating in the player Stats dictionary. Why am I using the replace operator ? Because the delimiter for player rating is actually : and not <space>
@@ -183,6 +200,9 @@ def processFile(cursor, dataDirectory, fileName, fifaVersion):
     else:
         insertPlayerStats(cursor, playerId, playerStats, fifaVersion)
 
+"""
+Given a FIFA version, this function creates a database, inserts data and then puts in indices.
+"""
 def createFIFADB(fifaVersion):
     connection = createConnection(fifaVersion)
     createTables(connection, fifaVersion)
@@ -194,15 +214,16 @@ def createFIFADB(fifaVersion):
     for playerFile in os.listdir(dataDirectory):
         print playerFile
         processFile(cursor, dataDirectory, playerFile, fifaVersion)
-        break
-    processFile(cursor, dataDirectory, "4 - Casillas.dat", fifaVersion)
     createIndices(connection)
     connection.commit()
     connection.close()
 
 def main():
+    #POINT TO BE NOTED. FIFA 12 and 13 data might not be completely clean.
     createFIFADB(15)
-    return
+    createFIFADB(14)
+    createFIFADB(13)
+    createFIFADB(12)
 
 if __name__ == '__main__':
     main()
