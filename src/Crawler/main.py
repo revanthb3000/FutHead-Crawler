@@ -4,10 +4,11 @@ import statExtractor
 from multiprocessing import Process
 
 def main():
-    getFIFAData(12)
-    getFIFAData(13)
-    getFIFAData(14)
-    getFIFAData(15)
+#     getFIFAData(12)
+#     getFIFAData(13)
+#     getFIFAData(14)
+#     getFIFAData(15)
+    getFIFAPics(15)
         
 """
 Extracts all data for a given FIFA version.
@@ -27,6 +28,25 @@ def getFIFAData(fifaVersion):
 
     for process in processes:
         process.join()
+        
+"""
+Extracts all pics for a given FIFA version.
+"""
+def getFIFAPics(fifaVersion):
+    start = 1
+    end = 50000
+    cnt = start
+    #Number of players crawled per thread.
+    numOfPlayers = 5000
+    processes = []
+    while(cnt < end):
+        p = Process(target=getPlayerPictures,args=(cnt, cnt + numOfPlayers, fifaVersion))
+        p.start()
+        processes.append(p)
+        cnt += numOfPlayers
+
+    for process in processes:
+        process.join()
 
 """
 Runs the getPlayerInfo function in a loop.
@@ -38,6 +58,29 @@ def crawlPlayerPages(startId, endId, fifaVersion):
             getPlayerInfo(browser, fifaVersion, playerId)
         except:
             print ""
+    browser.close()
+
+"""
+This function downloads all player pics
+"""  
+def getPlayerPictures(startId, endId, fifaVersion):
+    browser = webHandler.getBrowserHandler()
+    for playerId in range(startId,endId):
+        try:
+            extractPlayerPicture(browser, fifaVersion, playerId)
+        except:
+            print ""
+    browser.close()
+
+"""
+Given a playerId and FIFA version, this function downloads and saves the player's card picture.
+It's the div with class= "playercard-picture"
+"""
+def extractPlayerPicture(browser, fifaVersion, playerId):
+    playerInfo = webHandler.getPlayerPageContents(browser, fifaVersion, playerId)
+    soup = statExtractor.getSoupHandler(playerInfo["futHeadPage"])
+    imageUrl = statExtractor.getPlayerPicLink(soup)
+    utilityFunctions.saveImageToFile(browser, fifaVersion, playerId, imageUrl)
 
 """
 This is the main function that stitches all pieces together and writes data to a file.
@@ -59,7 +102,7 @@ def getPlayerInfo(browser, fifaVersion, playerId):
     playerFileContents += "Base Stats : \n" + playerBaseStats + "\n"
     playerFileContents += "Individual Stats : \n" + playerIndividualStats + "\n"
     
-    fileName = "../data/" + str(fifaVersion) + "/" + str(playerId) + " - " + playerName + ".dat"
+    fileName = "../../data/" + str(fifaVersion) + "/" + str(playerId) + " - " + playerName + ".dat"
     utilityFunctions.writeSourceToFile(fileName, playerFileContents.encode('utf-8'))
     
 

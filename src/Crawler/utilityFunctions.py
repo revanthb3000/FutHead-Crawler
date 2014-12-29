@@ -25,3 +25,13 @@ def scrapeTable(tableElement):
             continue
         scrapedTable += attribute.strip() + "\n"
     return scrapedTable.strip()
+
+"""
+Given a browser, fifaVersion, playerId and image Url, this function downloads that image and saves it as the filename as constructed from the arguments.
+"""
+def saveImageToFile(browser, fifaVersion, playerId, imageUrl):
+    data = browser.open(imageUrl).read()
+    fileName = "../../pics/" + str(fifaVersion) + "/" + str(playerId) + ".png"
+    fileHandle = open(fileName, 'wb')
+    fileHandle.write(data)
+    fileHandle.close()

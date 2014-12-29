@@ -58,4 +58,11 @@ def getPlayerDetails(soup):
     playerData += utilityFunctions.scrapeTable(playerDataElements[0]) + "\n"
     playerData += utilityFunctions.scrapeTable(playerDataElements[1])
     return playerData
-    
+
+"""
+This function gets the URL of the player's pic.
+"""
+def getPlayerPicLink(soup):
+    picDiv = soup.findAll('div',{"class":"playercard-picture"})[0]
+    url = picDiv.findAll('img')[0]['src']
+    return url
