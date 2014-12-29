@@ -84,6 +84,7 @@ Given a playerId and FIFA version, this function downloads and saves the player'
 It's the div with class= "playercard-picture"
 """
 def extractPlayerPicture(browser, fifaVersion, playerId):
+    print "Now extracting : " + str(playerId)
     playerInfo = webHandler.getPlayerPageContents(browser, fifaVersion, playerId)
     soup = statExtractor.getSoupHandler(playerInfo["futHeadPage"])
     imageUrl = statExtractor.getPlayerPicLink(soup)
