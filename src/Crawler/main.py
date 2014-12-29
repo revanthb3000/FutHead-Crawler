@@ -5,7 +5,7 @@ import sys
 from multiprocessing import Process
 
 def main():
-    action = sys.argv[0]
+    action = sys.argv[1]
     if(action == "pics"):
         getFIFAPics(15)
         getFIFAPics(14)
