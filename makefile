@@ -1,8 +1,11 @@
 all:
-	@echo 'Use one of the targets - crawl/renameFiles/postprocess/createDB'
+	@echo 'Use one of the targets - crawlData/crawlPics/renameFiles/postprocess/createDB'
 
-crawl:
-	cd src/Crawler; python main.py
+crawlData:
+	python src/Crawler/main.py data
+
+crawlPics:
+	python src/Crawler/main.py pics
 
 renameFiles:
 	python src/PostProcessing/renameFiles.py

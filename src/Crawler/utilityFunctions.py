@@ -31,7 +31,7 @@ Given a browser, fifaVersion, playerId and image Url, this function downloads th
 """
 def saveImageToFile(browser, fifaVersion, playerId, imageUrl):
     data = browser.open(imageUrl).read()
-    fileName = "../../pics/" + str(fifaVersion) + "/" + str(playerId) + ".png"
+    fileName = "pics/" + str(fifaVersion) + "/" + str(playerId) + ".png"
     fileHandle = open(fileName, 'wb')
     fileHandle.write(data)
     fileHandle.close()

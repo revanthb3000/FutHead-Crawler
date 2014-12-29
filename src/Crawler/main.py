@@ -1,14 +1,21 @@
 import webHandler
 import utilityFunctions
 import statExtractor
+import sys
 from multiprocessing import Process
 
 def main():
-#     getFIFAData(12)
-#     getFIFAData(13)
-#     getFIFAData(14)
-#     getFIFAData(15)
-    getFIFAPics(15)
+    action = sys.argv[0]
+    if(action == "pics"):
+        getFIFAPics(15)
+        getFIFAPics(14)
+        getFIFAPics(13)
+        getFIFAPics(12)
+    else:
+        getFIFAData(12)
+        getFIFAData(13)
+        getFIFAData(14)
+        getFIFAData(15)
         
 """
 Extracts all data for a given FIFA version.
@@ -102,7 +109,7 @@ def getPlayerInfo(browser, fifaVersion, playerId):
     playerFileContents += "Base Stats : \n" + playerBaseStats + "\n"
     playerFileContents += "Individual Stats : \n" + playerIndividualStats + "\n"
     
-    fileName = "../../data/" + str(fifaVersion) + "/" + str(playerId) + " - " + playerName + ".dat"
+    fileName = "data/" + str(fifaVersion) + "/" + str(playerId) + " - " + playerName + ".dat"
     utilityFunctions.writeSourceToFile(fileName, playerFileContents.encode('utf-8'))
     
 
