@@ -73,6 +73,9 @@ This function downloads all player pics
 def getPlayerPictures(startId, endId, fifaVersion):
     browser = webHandler.getBrowserHandler()
     for playerId in range(startId,endId):
+        fileName = "pics/" + str(fifaVersion) + "/" + str(playerId) + ".png"
+        if(utilityFunctions.doesFileExist(fileName)):
+            continue
         try:
             extractPlayerPicture(browser, fifaVersion, playerId)
         except:

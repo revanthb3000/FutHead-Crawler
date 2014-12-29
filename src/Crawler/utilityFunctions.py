@@ -1,6 +1,7 @@
 """
 All frequently used functions/utilities will be written over here.
 """
+import os.path
 
 """
 Simple function.Give me a filename and contents and this function will do the writing.
@@ -35,3 +36,9 @@ def saveImageToFile(browser, fifaVersion, playerId, imageUrl):
     fileHandle = open(fileName, 'wb')
     fileHandle.write(data)
     fileHandle.close()
+    
+"""
+This function returns true if a file exists and False if it doesn't exist.
+"""
+def doesFileExist(fileName):
+    return os.path.exists(fileName)
